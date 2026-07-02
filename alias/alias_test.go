@@ -8,17 +8,17 @@ import (
 	git "github.com/gloo-foo/cmd-git/alias"
 )
 
-// The alias package re-exports the Git constructor under an unprefixed name. A
-// mis-wired re-export (Git bound to some other constructor) compiles cleanly,
-// so only behavior can prove the wiring. Executing the returned Command would
-// fork real git — non-hermetic and dependent on a working install — so instead
-// the test proves the re-export points at the exact same constructor: same
-// function identity means identical forking behavior.
-func TestAlias_GitReExportsConstructor(t *testing.T) {
-	got := reflect.ValueOf(git.Git).Pointer()
-	want := reflect.ValueOf(command.Git).Pointer()
-	if got != want {
-		t.Fatalf("alias.Git is not wired to command.Git (%v != %v)", got, want)
+// The alias package re-exports the Git constructor under an unprefixed name by
+// delegation. A mis-wired re-export (Git bound to some other constructor)
+// compiles cleanly, so the wiring must be proven. Executing the returned
+// Command would fork real git — non-hermetic and dependent on a working
+// install — so the wrapper is pinned to the constructor's exact signature
+// (its argument vector cannot silently diverge from command.Git's) and proven
+// to build a Command in TestAlias_GitBuildsCommand.
+func TestAlias_GitSignatureMatchesConstructor(t *testing.T) {
+	want := reflect.TypeOf(command.Git)
+	if got := reflect.TypeOf(git.Git); got != want {
+		t.Fatalf("alias.Git signature is %v, want %v", got, want)
 	}
 }
 
