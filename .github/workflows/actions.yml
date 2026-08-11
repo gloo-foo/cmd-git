@@ -16,7 +16,7 @@ on:
       - ".actionlint*"
       - ".standards.yaml"
   schedule:
-    - cron: "55 21 * * 1"
+    - cron: "0 17 24 * *"
   workflow_dispatch:
 concurrency:
   group: actions-${{ github.ref }}
